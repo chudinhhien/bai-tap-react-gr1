@@ -1,0 +1,15 @@
+.bai5 {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.right {
+  width: 100%;
+  height: calc(100vh - 100px);
+  flex: 1;
+}
+
+.left {
+  flex: 1;
+}
