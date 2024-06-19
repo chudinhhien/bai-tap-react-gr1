@@ -1,45 +1,28 @@
 import React, { useState } from 'react';
+import { Form, Input, Button, Row, Col, DatePicker } from 'antd';
 import './Bai1_7.scss';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { ToastContainer, toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 export const Bai1_7 = () => {
+    const [form] = Form.useForm();
     const storageStudents = JSON.parse(localStorage.getItem("students")) || [];
+    const [students, setStudents] = useState(storageStudents);
 
-    // Load font
-    const font = {
-        family: 'Open Sans',
-        style: 'normal'
-    };
-
-    // Add font to jsPDF
-    const doc = new jsPDF();
-    doc.addFont(font.family, 'OpenSans', font.style);
-    doc.setFont('OpenSans');
-
-    const [students, setStudents] = useState(storageStudents)
-
-    const handleFormSubmit = (event) => {
-        event.preventDefault();
-        
-        const name = event.target.name.value
-        const id = event.target.id.value
-        const dob = event.target.dob.value
-        const email = event.target.email.value
+    const handleFormSubmit = (values) => {
+        const { name, id, dob, email } = values;
 
         const checkStudent = students.find(student => student.id === id);
 
         if (!checkStudent) {
-            const newStudents = {name, id, dob, email}
-    
-            const updatedStudents = [...students, newStudents]
-            setStudents(updatedStudents)
-    
+            const newStudent = { name, id, dob: dob.format('YYYY-MM-DD'), email };
+            const updatedStudents = [...students, newStudent];
+            setStudents(updatedStudents);
             localStorage.setItem("students", JSON.stringify(updatedStudents));
-            event.target.reset();
-
+            form.resetFields("");
             toast.success(`Đã thêm thành công sinh viên ${name}`, {
                 position: "top-right",
                 autoClose: 3000,
@@ -60,48 +43,35 @@ export const Bai1_7 = () => {
                 draggable: true,
                 progress: undefined,
                 theme: "light",
-              });
+            });
         }
-
-    }
+    };
 
     const handleDelete = (index) => {
         const updatedStudents = [...students];
         updatedStudents.splice(index, 1);
         setStudents(updatedStudents);
         localStorage.setItem("students", JSON.stringify(updatedStudents));
-    }
+    };
 
-    // const exportToExcel = () => {
-    //     const wb = XLSX.utils.table_to_book(document.getElementById('my-table'));
-    //     XLSX.writeFile(wb, 'students.xlsx');
-    // }
-    
     const exportToExcel = () => {
-        const filteredStudents = students.map(({name, id, dob, email}) => ({
+        const filteredStudents = students.map(({ name, id, dob, email }) => ({
             "Họ Tên": name,
             "MSSV": id,
             "Ngày sinh": dob,
             "Email": email,
             "Địa chỉ": ""
         }));
-        
         const ws = XLSX.utils.json_to_sheet(filteredStudents);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Students');
         XLSX.writeFile(wb, 'students.xlsx');
-    }
+    };
 
     const exportToPDF = () => {
         const doc = new jsPDF();
-    
-        // Set the title
         doc.text("Danh sách sinh viên", 10, 10);
-    
-        // Define column headers
         const headers = ['STT', 'MSSV', 'Họ tên', 'Ngày sinh', 'Email'];
-        
-        // Define rows data
         const rows = students.map((student, index) => [
             index + 1,
             student.id,
@@ -109,50 +79,65 @@ export const Bai1_7 = () => {
             student.dob,
             student.email
         ]);
-    
-        // AutoTable plugin to generate table
         doc.autoTable({
             head: [headers],
             body: rows
         });
-    
-        // Save the PDF
         doc.save("students.pdf");
     };
-     
 
     return (
         <div className="Bai1" style={{ padding: 32 }}>
-            <h1>Bài 1, 7: Thao tác với Data Table và export data dạng excel và pdf</h1>
-            <form onSubmit={handleFormSubmit} className='form'>
-                <div className="form-group">
-                    <label htmlFor="name">Họ và tên</label>
-                    <input type="text" id="name" name="name" required />
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="id">MSSV</label>
-                    <input type="text" id="id" name="id" required />
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="dob">Ngày sinh</label>
-                    <input type="date" id="dob" name="dob" placeholder='dd/mm/yyyy' required />
-                </div>
-
-                <div className="form-group">
-                    <label htmlFor="email">Email</label>
-                    <input type="email" id="email" name="email" required />
-                </div>
-
-                <div className="form-group form-btn">
-                    <button className="btn" type="submit">
+            <h1>Bài 1 + 7: Thao tác với Data Table và export data dạng excel và pdf</h1>
+            <Form onFinish={handleFormSubmit} className="form" form={form}>
+                <Row gutter={50}>
+                    <Col xs={24} md={12}>
+                        <Form.Item
+                            label="Họ và tên"
+                            name="name"
+                            rules={[{ required: true, message: 'Vui lòng nhập họ và tên' }]}
+                        >
+                            <Input />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} md={12}>
+                        <Form.Item
+                            label="MSSV"
+                            name="id"
+                            rules={[{ required: true, message: 'Vui lòng nhập MSSV' }]}
+                        >
+                            <Input />
+                        </Form.Item>
+                    </Col>
+                </Row>
+                <Row gutter={50}>
+                    <Col xs={24} md={12}>
+                        <Form.Item
+                            label="Ngày sinh"
+                            name="dob"
+                            rules={[{ required: true, message: 'Vui lòng chọn ngày sinh' }]}
+                        >
+                            <DatePicker style={{ width: '100%' }} />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} md={12}>
+                        <Form.Item
+                            label="Email"
+                            name="email"
+                            rules={[{ required: true, message: 'Vui lòng nhập email' }]}
+                        >
+                            <Input />
+                        </Form.Item>
+                    </Col>
+                </Row>
+                <Form.Item>
+                    <Button className="btn" type="primary" htmlType="submit">
                         Thêm
-                    </button>
-                </div>
-            </form>
+                    </Button>
+                </Form.Item>
+            </Form>
 
-            <table id='my-table'>
+            <table id="my-table">
                 <thead>
                     <tr>
                         <th>STT</th>
@@ -171,18 +156,18 @@ export const Bai1_7 = () => {
                             <td>{student.name}</td>
                             <td>{student.dob}</td>
                             <td>{student.email}</td>
-                            <td><button className="btn" onClick={() => handleDelete(index)}>Xóa</button></td>
+                            <td><Button className="btn" type="danger" onClick={() => handleDelete(index)}>Xóa</Button></td>
                         </tr>
                     ))}
                 </tbody>
             </table>
 
             <div className="export">
-                <p className='export--title'>Export:</p>
-                <button className='btn' onClick={exportToExcel}>Excel</button>
-                <button className="btn" onClick={exportToPDF}>PDF</button>
+                <p className="export--title">Export:</p>
+                <Button className="btn" onClick={exportToExcel}>Excel</Button>
+                <Button className="btn" onClick={exportToPDF}>PDF</Button>
             </div>
             <ToastContainer />
         </div>
-    )
-}
+    );
+};

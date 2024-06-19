@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import './Bai3_4.scss';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faWater, faCat, faFishFins } from '@fortawesome/free-solid-svg-icons';
 import { ToastContainer, toast } from 'react-toastify';
-import all_icons from '../Assets/Icons/all_icons'
 import 'react-toastify/dist/ReactToastify.css';
-import Swal from 'sweetalert2'
+import Swal from 'sweetalert2';
+import all_bai2_img from '../Assets/all_bai2_img';
 
-const catPosition = { row: null, col: null };
-const fishPosition = { row: null, col: null };
+const marioPosition = { row: null, col: null };
+const diamondPosition = { row: null, col: null };
 const maze = [
-    ["", "", "", "", "fish", ""],
+    ["", "", "", "", "diamond", ""],
     ["", "", "", "water", "water", "water"],
     ["", "", "", "", "", ""],
     ["water", "water", "water", "water", "", ""],
@@ -18,7 +16,7 @@ const maze = [
     ["", "", "", "", "", ""],
     ["", "", "water", "water", "water", "water"],
     ["", "", "", "", "", ""],
-    ["", "", "", "cat", "", ""]
+    ["", "", "", "mario", "", ""]
 ];
 
 export const Bai3_4 = () => {
@@ -26,19 +24,18 @@ export const Bai3_4 = () => {
     const [mazeState, setMazeState] = useState(JSON.parse(JSON.stringify(maze)));
 
     useEffect(() => {
-        // Lấy vị trí ban đầu của cat và fish trong map
         mazeState.forEach((row, rowIndex) => {
             row.forEach((cell, colIndex) => {
-                if (cell === 'cat') {
-                    catPosition.row = rowIndex;
-                    catPosition.col = colIndex;
-                } else if (cell === 'fish') {
-                    fishPosition.row = rowIndex;
-                    fishPosition.col = colIndex;
+                if (cell === 'mario') {
+                    marioPosition.row = rowIndex;
+                    marioPosition.col = colIndex;
+                } else if (cell === 'diamond') {
+                    diamondPosition.row = rowIndex;
+                    diamondPosition.col = colIndex;
                 }
             });
         });
-    },[])
+    }, [mazeState]);
 
     const notifiError = (move) => {
         toast.error(`Bạn đã đâm vào vật cản bên ${move}`, {
@@ -50,7 +47,7 @@ export const Bai3_4 = () => {
             draggable: true,
             progress: undefined,
             theme: "light",
-            });
+        });
     }
 
     const renderBoard = () => {
@@ -60,12 +57,9 @@ export const Bai3_4 = () => {
                     <div key={rowIndex} className="row">
                         {row.map((cell, colIndex) => (
                             <div key={`${rowIndex}-${colIndex}`} className="boxes">
-                                {cell === 'fish' && <FontAwesomeIcon icon={faFishFins} color='#111' />}
-                                {/* {cell === 'fish' && <img src={all_icons.cup}></img>} */}
-                                {/* {cell === 'water' && <img src={all_icons.geng_icon}></img>} */}
-                                {cell === 'water' && <FontAwesomeIcon icon={faWater} color='blue' />}
-                                {/* {cell === 'cat' && <img src={all_icons.t1_icon}></img>} */}
-                                {cell === 'cat' && <FontAwesomeIcon icon={faCat} color='#111' />}
+                                {cell === 'diamond' && <img src={all_bai2_img.diamond} alt="diamond" />}
+                                {cell === 'water' && <img src={all_bai2_img.blue} alt="water" style={{ width: '100%', height: '100%' }} />}
+                                {cell === 'mario' && <img src={all_bai2_img.mario} alt="mario" />}
                             </div>
                         ))}
                     </div>
@@ -89,33 +83,33 @@ export const Bai3_4 = () => {
 
         for (let i = 0; i < moves.length; i++) {
             const updatedMazeState = [...mazeState];
-            updatedMazeState[catPosition.row][catPosition.col] = '';
+            updatedMazeState[marioPosition.row][marioPosition.col] = '';
 
             switch (moves[i]) {
                 case 'l':
-                    if (catPosition.col > 0 && updatedMazeState[catPosition.row][catPosition.col - 1] !== 'water') {
-                        catPosition.col -= 1;
+                    if (marioPosition.col > 0 && updatedMazeState[marioPosition.row][marioPosition.col - 1] !== 'water') {
+                        marioPosition.col -= 1;
                     } else {
                         notifiError("trái");
                     }
                     break;
                 case 'r':
-                    if (catPosition.col < updatedMazeState[0].length - 1 && updatedMazeState[catPosition.row][catPosition.col + 1] !== 'water') {
-                        catPosition.col += 1;
+                    if (marioPosition.col < updatedMazeState[0].length - 1 && updatedMazeState[marioPosition.row][marioPosition.col + 1] !== 'water') {
+                        marioPosition.col += 1;
                     } else {
                         notifiError("phải");
                     }
                     break;
                 case 'u':
-                    if (catPosition.row > 0 && updatedMazeState[catPosition.row - 1][catPosition.col] !== 'water') {
-                        catPosition.row -= 1;
+                    if (marioPosition.row > 0 && updatedMazeState[marioPosition.row - 1][marioPosition.col] !== 'water') {
+                        marioPosition.row -= 1;
                     } else {
                         notifiError("trên");
                     }
                     break;
                 case 'd':
-                    if (catPosition.row < updatedMazeState.length - 1 && updatedMazeState[catPosition.row + 1][catPosition.col] !== 'water') {
-                        catPosition.row += 1;
+                    if (marioPosition.row < updatedMazeState.length - 1 && updatedMazeState[marioPosition.row + 1][marioPosition.col] !== 'water') {
+                        marioPosition.row += 1;
                     } else {
                         notifiError("dưới");
                     }
@@ -124,13 +118,13 @@ export const Bai3_4 = () => {
                     break;
             }
 
-            updatedMazeState[catPosition.row][catPosition.col] = 'cat';
+            updatedMazeState[marioPosition.row][marioPosition.col] = 'mario';
             setMazeState([...updatedMazeState]);
 
-            if (catPosition.row === fishPosition.row && catPosition.col === fishPosition.col) {
+            if (marioPosition.row === diamondPosition.row && marioPosition.col === diamondPosition.col) {
                 Swal.fire({
                     title: 'Chiến thắng!',
-                    text: 'Mèo đã bắt được cá',
+                    text: 'Mario đã tìm được kim cương',
                     icon: 'success',
                     confirmButtonText: 'OK'
                 });
@@ -142,25 +136,18 @@ export const Bai3_4 = () => {
     };
 
     const handlePlayAgain = () => {
-        // Tạo một bản sao của maze để cập nhật trạng thái
-        const newMazeState = [...maze];
-        // Cập nhật mazeState
         setMazeState(JSON.parse(JSON.stringify(maze)));
         maze.forEach((row, rowIndex) => {
             row.forEach((cell, colIndex) => {
-                if (cell === 'cat') {
-                    catPosition.row = rowIndex;
-                    catPosition.col = colIndex;
-                } else if (cell === 'fish') {
-                    fishPosition.row = rowIndex;
-                    fishPosition.col = colIndex;
+                if (cell === 'mario') {
+                    marioPosition.row = rowIndex;
+                    marioPosition.col = colIndex;
+                } else if (cell === 'diamond') {
+                    diamondPosition.row = rowIndex;
+                    diamondPosition.col = colIndex;
                 }
             });
         });
-        console.log('Play Again')
-        console.log(mazeState)
-        console.log(newMazeState)
-        console.log(catPosition)
     }
 
     return (
